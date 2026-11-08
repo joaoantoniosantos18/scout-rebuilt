@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0C0F">
+<title>Scout REBUILT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0C0F;--s1:#111419;--s2:#171B21;--s3:#1F242C;--line:#252A33;--line2:#2E343E;
+  --tx:#ECEEF1;--mu:#8A929F;--mu2:#5E6672;
+  --fuel:#FFC21A;--fuel2:#FFE08A;--fuelD:#B98300;
+  --red:#FF4A5A;--blue:#3D8BFF;--ok:#2ED47A;--warn:#FFB020;--bad:#FF5C5C;
+  --ac:var(--fuel);--hh:58px;
+}
+body.red{--ac:var(--red)} body.blue{--ac:var(--blue)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font-family:Manrope,system-ui,-apple-system,sans-serif;color:var(--tx);min-height:100vh;touch-action:manipulation;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 420px at 50% -180px,color-mix(in srgb,var(--ac) 13%,transparent),transparent 72%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.35;cursor:default}
+input,textarea,select{font:inherit;color:var(--tx)}
+.num{font-family:'Chakra Petch',monospace;font-variant-numeric:tabular-nums}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:rgba(10,12,15,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:10px;align-items:center}
+.mark{width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle at 34% 30%,#FFF1BF 0,#FFD45A 22%,var(--fuel) 48%,var(--fuelD) 100%);box-shadow:0 0 18px rgba(255,194,26,.32),inset -3px -4px 6px rgba(0,0,0,.18)}
+.brand b{font-family:'Chakra Petch';letter-spacing:.16em;font-size:15px;display:block;line-height:1.05}
+.brand small{font-size:10px;color:var(--mu);letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+.sync{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:7px 11px;border-radius:99px;background:var(--s2);border:1px solid var(--line)}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--mu)}
+.sync.ok i{background:var(--ok);box-shadow:0 0 8px var(--ok)} .sync.warn i{background:var(--warn)} .sync.wait i{background:var(--fuel);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+main{max-width:560px;margin:0 auto;padding:12px 14px calc(100px + env(safe-area-inset-bottom))}
+main.wide{max-width:980px}
+
+/* bottom nav */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);max-width:560px;margin:0 auto;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:rgba(13,15,19,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+@media(min-width:600px){.tabs{bottom:14px;border:1px solid var(--line);border-radius:20px;padding:6px 8px}}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 5px;font-size:11px;font-weight:700;color:var(--mu);border-radius:12px;letter-spacing:.02em}
+.tabs button.on{color:var(--tx)} .tabs button.on svg{color:var(--fuel)}
+.tabs svg{width:22px;height:22px}
+
+/* match header */
+.sticky{position:sticky;top:var(--hh);z-index:15;margin:-12px -14px 0;padding:12px 14px 0;background:linear-gradient(var(--bg) 82%,rgba(10,12,15,0))}
+.editing{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;color:var(--warn);background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.3);padding:8px 12px;border-radius:12px;margin-bottom:8px}
+.editing button{color:var(--tx);text-decoration:underline}
+.matchbar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--s1);border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:16px;padding:9px 10px 9px 12px;min-height:60px}
+.mb-id{display:flex;align-items:center;gap:10px;min-width:0}
+.mb-q{font-family:'Chakra Petch';font-size:11px;color:var(--mu);letter-spacing:.1em;font-weight:700;display:block}
+.mb-team{font-family:'Chakra Petch';font-size:26px;font-weight:700;line-height:1}
+.atag{font-size:10px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:6px;text-transform:uppercase}
+.atag.R{background:rgba(255,74,90,.16);color:#FF8A95} .atag.B{background:rgba(61,139,255,.16);color:#8DB8FF}
+.clock{display:flex;align-items:center;gap:8px}
+.cstart{display:flex;align-items:center;gap:7px;padding:10px 14px;border-radius:12px;background:var(--ac);color:#111;font-weight:800;font-size:13px}
+body:not(.red):not(.blue) .cstart{color:#1a1300}
+.clk{text-align:right;line-height:1.05}
+.clk small{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--mu)}
+.clk b{font-family:'Chakra Petch';font-size:26px;font-variant-numeric:tabular-nums}
+.hub{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;margin-top:2px}
+.hub.on{background:rgba(46,212,122,.15);color:var(--ok)} .hub.off{background:rgba(255,92,92,.14);color:var(--bad)} .hub.unk{background:var(--s3);color:var(--mu)}
+.cstop{width:38px;height:38px;border-radius:11px;background:var(--s3);display:grid;place-items:center;color:var(--mu)}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;padding-bottom:4px}
+.steps button{padding:10px 0 8px;font-size:12.5px;font-weight:800;color:var(--mu);border-bottom:2px solid var(--line);letter-spacing:.02em}
+.steps button.on{color:var(--tx);border-color:var(--ac)}
+.steps button.done{color:#B9C0CA}
+.pane{padding-top:14px;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}}
+
+/* form bits */
+.field{margin-bottom:16px}
+.field>label,.lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:800;color:var(--mu);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px}
+.lbl em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600;color:var(--mu2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inp{width:100%;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:16px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--ac)}
+.inp.big{font-family:'Chakra Petch';font-size:30px;font-weight:700;text-align:center;letter-spacing:.06em;padding:12px}
+textarea.inp{min-height:96px;resize:vertical;line-height:1.45}
+.stepper{display:grid;grid-template-columns:52px 1fr 52px;background:var(--s1);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stepper button{height:54px;font-size:22px;font-weight:700;color:var(--mu)}
+.stepper button:active{background:var(--s3)}
+.stepper span{display:grid;place-items:center;font-family:'Chakra Petch';font-size:24px;font-weight:700}
+.alli{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.alli button{height:64px;border-radius:16px;font-weight:800;font-size:16px;border:1px solid var(--line);background:var(--s1);display:flex;align-items:center;justify-content:center;gap:9px}
+.alli button i{width:12px;height:12px;border-radius:4px}
+.alli .a-R i{background:var(--red)} .alli .a-B i{background:var(--blue)}
+.alli .a-R.on{background:rgba(255,74,90,.14);border-color:var(--red)} .alli .a-B.on{background:rgba(61,139,255,.14);border-color:var(--blue)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px;background:var(--s1);padding:5px;border-radius:14px;border:1px solid var(--line)}
+.seg button{padding:12px 4px;border-radius:10px;font-weight:700;font-size:14px;color:var(--mu);line-height:1.15}
+.seg button.on{background:var(--s3);color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.seg.wrap{grid-auto-flow:row;grid-template-columns:repeat(2,1fr)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:11px 14px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-weight:700;font-size:14px;color:#C6CCD5}
+.chip.on{background:rgba(255,194,26,.12);border-color:var(--fuel);color:var(--fuel2)}
+.chip.bad.on{background:rgba(255,92,92,.12);border-color:var(--bad);color:#FFB0B0}
+.tgl{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px;border-radius:14px;background:var(--s1);border:1px solid var(--line);font-weight:700;text-align:left;gap:12px;font-size:14.5px;margin-bottom:10px}
+.tgl small{display:block;font-weight:600;color:var(--mu);font-size:12px;margin-top:2px}
+.sw{width:46px;height:28px;border-radius:99px;background:var(--s3);position:relative;flex:none;transition:.2s}
+.sw::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#7C8491;transition:.2s}
+.tgl.on{border-color:rgba(255,194,26,.5)} .tgl.on .sw{background:var(--fuel)} .tgl.on .sw::after{left:21px;background:#1a1300}
+.stars{display:flex;gap:6px}
+.stars button{flex:1;height:50px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-size:22px;color:var(--mu2)}
+.stars button.on{color:var(--fuel);border-color:rgba(255,194,26,.4);background:rgba(255,194,26,.07)}
+
+/* counters */
+.counter{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:14px;position:relative}
+.counter.hero{background:linear-gradient(180deg,rgba(255,194,26,.06),transparent 60%),var(--s1);border-color:rgba(255,194,26,.22)}
+.counter.dim{opacity:.62}
+.c-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.c-head span{font-weight:800;font-size:14px}
+.c-head small{color:var(--mu);font-size:12px;font-weight:600}
+.c-val{font-family:'Chakra Petch';font-weight:700;font-size:72px;line-height:1;text-align:center;margin:6px 0 12px;color:var(--fuel);font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(255,194,26,.25)}
+.counter.small .c-val{font-size:42px;color:var(--tx);text-shadow:none;margin:4px 0 10px}
+.c-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.counter.small .c-btns{grid-template-columns:repeat(3,1fr)}
+.c-btns button{height:62px;border-radius:14px;background:var(--s3);font-family:'Chakra Petch';font-weight:700;font-size:20px;border:1px solid var(--line2);transition:transform .08s}
+.counter.small .c-btns button{height:52px;font-size:18px}
+.c-btns button:active{transform:scale(.93)}
+.c-btns .minus{color:var(--mu)}
+.c-btns .p1{background:var(--fuel);color:#1a1300;border-color:transparent}
+.c-btns .pn{color:var(--fuel2);border-color:rgba(255,194,26,.3)}
+.bump{animation:bump .22s ease}
+@keyframes bump{40%{transform:scale(1.13)}}
+.hint{font-size:12px;color:var(--bad);font-weight:700;text-align:center;margin:-6px 0 10px}
+.undo{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--mu);padding:7px 11px;border-radius:10px;background:var(--s1);border:1px solid var(--line);margin-bottom:12px}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* tower */
+.tower{display:grid;gap:8px;margin-bottom:8px}
+.tower button{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:60px;border-radius:14px;background:var(--s1);border:1px solid var(--line);font-weight:800;font-size:16px}
+.tower button em{font-style:normal;font-family:'Chakra Petch';color:var(--mu);font-size:15px}
+.tower button .rung{display:flex;gap:4px;align-items:center}
+.tower button .rung i{width:18px;height:5px;border-radius:3px;background:var(--line2)}
+.tower button.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 10%,var(--s1))}
+.tower button.on em{color:var(--fuel)}
+.tower button.on .rung i.f{background:var(--fuel)}
+
+.next{width:100%;height:58px;border-radius:16px;background:var(--s2);border:1px solid var(--line2);font-weight:800;font-size:16px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.save{width:100%;height:64px;border-radius:18px;background:var(--fuel);color:#1a1300;font-weight:800;font-size:17px;margin-top:6px;box-shadow:0 10px 30px -10px rgba(255,194,26,.55)}
+.save:active{transform:scale(.98)}
+.ghost{width:100%;padding:14px;color:var(--mu);font-weight:700;font-size:14px;margin-top:6px}
+.sum{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:16px}
+.sum .tot{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:8px}
+.sum .tot span{font-weight:800;font-size:13px;color:var(--mu);letter-spacing:.07em;text-transform:uppercase}
+.sum .tot b{font-family:'Chakra Petch';font-size:36px;color:var(--fuel);line-height:1}
+.sum .ln{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:#C6CCD5}
+.sum .ln b{font-family:'Chakra Petch'}
+
+/* data */
+h1{font-family:'Chakra Petch';font-size:26px;font-weight:700;letter-spacing:.02em}
+h2{font-family:'Chakra Petch';font-size:18px;font-weight:700;margin:26px 0 12px;letter-spacing:.02em}
+.h1row{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 14px;gap:10px;flex-wrap:wrap}
+.muted{color:var(--mu);font-size:13px;font-weight:600}
+.scroller{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+.scroller .chip{white-space:nowrap;padding:9px 13px;font-size:13px}
+.trow{display:grid;grid-template-columns:26px 1fr auto;align-items:center;column-gap:12px;row-gap:9px;padding:12px 14px;background:var(--s1);border:1px solid var(--line);border-radius:16px;margin-bottom:8px;width:100%;text-align:left}
+.trow:active{background:var(--s2)}
+.trow .rk{font-family:'Chakra Petch';color:var(--mu2);font-weight:700;font-size:15px}
+.trow .tn{font-family:'Chakra Petch';font-size:23px;font-weight:700;line-height:1;display:flex;align-items:center;gap:8px}
+.trow .meta{font-size:12px;color:var(--mu);margin-top:4px;font-weight:600}
+.trow .meta b{color:#C6CCD5;font-weight:700}
+.trow .pv{text-align:right}
+.trow .pv b{font-family:'Chakra Petch';font-size:26px;color:var(--fuel);line-height:1}
+.trow .pv small{display:block;font-size:10px;color:var(--mu);font-weight:700;letter-spacing:.08em}
+.bar{height:4px;border-radius:9px;background:var(--s3);grid-column:2/4;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--fuelD),var(--fuel))}
+.badge{font-family:Manrope;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:5px;background:var(--s3);color:var(--mu)}
+.badge.pit{background:rgba(61,139,255,.14);color:#8DB8FF}
+.empty{text-align:center;padding:40px 20px;color:var(--mu);background:var(--s1);border:1px dashed var(--line2);border-radius:18px;font-size:14px;line-height:1.5}
+.empty b{display:block;color:var(--tx);font-size:16px;margin-bottom:4px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.sim{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sim .inp{font-family:'Chakra Petch';font-size:20px;font-weight:700;text-align:center;padding:12px 6px}
+.meter{margin-bottom:14px}
+.meter .mh{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px}
+.meter .mh span{color:var(--mu)}
+.meter .mh b{font-family:'Chakra Petch'}
+.meter .mh b.ok{color:var(--ok)}
+.track{position:relative;height:10px;border-radius:9px;background:var(--s3);overflow:visible}
+.track i{display:block;height:100%;border-radius:9px;background:var(--fuel);max-width:100%}
+.track i.ok{background:var(--ok)}
+.track u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--tx);border-radius:2px;opacity:.7}
+.bigpred{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.bigpred b{font-family:'Chakra Petch';font-size:44px;color:var(--fuel);line-height:1}
+.bigpred span{font-size:12px;font-weight:800;color:var(--mu);letter-spacing:.08em;text-transform:uppercase}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line);font-size:14px;width:100%;text-align:left;gap:10px}
+.mrow:last-child{border-bottom:0}
+.mrow .l{display:flex;gap:10px;align-items:center;min-width:0}
+.mrow .q{font-family:'Chakra Petch';color:var(--mu);font-weight:700;width:38px;flex:none}
+.mrow .t{font-family:'Chakra Petch';font-weight:700;font-size:17px}
+.mrow small{color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .p{font-family:'Chakra Petch';font-weight:700;color:var(--fuel)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none}
+.dot.R{background:var(--red)} .dot.B{background:var(--blue)}
+.dot.pend{background:var(--warn)}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:60;display:none}
+#modal.open{display:block}
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.62);animation:fade .2s}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow:auto;background:var(--s1);border-radius:24px 24px 0 0;border:1px solid var(--line);border-bottom:0;
+  padding:8px 16px calc(28px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto;animation:up .26s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--line2);margin:4px auto 12px}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sheet-h h3{font-family:'Chakra Petch';font-size:28px;line-height:1}
+.sheet-h h3 small{display:block;font-family:Manrope;font-size:11px;letter-spacing:.12em;color:var(--mu);font-weight:800;margin-bottom:4px}
+.x{width:38px;height:38px;border-radius:12px;background:var(--s3);font-size:18px;color:var(--mu)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--s2);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
+.kpi small{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--mu);text-transform:uppercase;margin-bottom:5px}
+.kpi b{font-family:'Chakra Petch';font-size:24px;line-height:1}
+.kpi b.y{color:var(--fuel)}
+.kpi em{font-style:normal;font-size:11.5px;color:var(--mu);font-weight:600;margin-left:3px}
+.sec{font-size:11.5px;font-weight:800;letter-spacing:.09em;color:var(--mu);text-transform:uppercase;margin:18px 0 9px}
+.chart{background:var(--s2);border:1px solid var(--line);border-radius:14px;padding:12px 10px 6px}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--mu);font-weight:700;margin:2px 4px 8px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.dist{display:flex;height:30px;border-radius:9px;overflow:hidden;background:var(--s3)}
+.dist div{display:grid;place-items:center;font-size:11px;font-weight:800;color:#111;min-width:0;overflow:hidden;white-space:nowrap}
+.note{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45;margin-bottom:7px}
+.note small{display:block;color:var(--mu);font-size:11.5px;font-weight:700;margin-bottom:3px}
+.pitgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:13.5px}
+.pitgrid span{color:var(--mu)}
+.pitgrid b{font-weight:700}
+.mini{padding:7px 11px;border-radius:9px;background:var(--s3);font-size:12.5px;font-weight:700}
+.mini.del{color:#FF9A9A}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.btn{height:52px;border-radius:14px;background:var(--s2);border:1px solid var(--line2);font-weight:800;font-size:14.5px}
+.btn.y{background:var(--fuel);color:#1a1300;border-color:transparent}
+.btn.r{background:rgba(255,92,92,.12);color:#FF9A9A;border-color:rgba(255,92,92,.3)}
+.copybox{width:100%;min-height:200px;font-family:ui-monospace,monospace;font-size:12px}
+.p{font-size:14px;line-height:1.55;color:#C6CCD5}
+.p b{color:var(--tx)}
+.rules{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13.5px}
+.rules span{color:#C6CCD5} .rules b{font-family:'Chakra Petch';text-align:right}
+
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;z-index:70;pointer-events:none;
+  background:#F4F5F7;color:#111;padding:12px 16px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);transition:.22s;max-width:calc(100% - 32px);text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(min-width:760px){
+  .dados-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;align-items:start}
+  .dados-grid h2:first-child{margin-top:0}
+}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="brand"><span class="mark"></span><div><b>SCOUT</b><small>Rebuilt · FRC 2026</small></div></div>
+  <button class="sync" id="syncPill" data-action="sync"><i></i><span>Carregando…</span></button>
+</header>
+<main id="view"></main>
+<nav class="tabs" id="tabs">
+  <button data-action="nav" data-v="partida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Partida</button>
+  <button data-action="nav" data-v="pit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5a3.5 3.5 0 0 0 4.6 4.6l-7.8 7.8a2.1 2.1 0 0 1-3-3l7.8-7.8"/><path d="M14.5 6.5 17 4l3 3-2.5 2.5"/></svg>Pit</button>
+  <button data-action="nav" data-v="dados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dados</button>
+  <button data-action="nav" data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Ajustes</button>
+</nav>
+<div id="modal"></div>
+<div id="toast"></div>
+<datalist id="teamsList"></datalist>
+
+<script>
+/* ===================== Constantes do jogo ===================== */
+const TOWER_PTS = {none:0, fail:0, L1:10, L2:20, L3:30};
+const AUTO_CLIMB_PTS = 15;
+const THRESH = { // Team Update 22 (abr/2026)
+  reg:  {label:'Regional / Distrital', e:100, s:360, t:50},
+  dcmp: {label:'District Champs',      e:240, s:360, t:50},
+  cmp:  {label:'Mundial',              e:360, s:500, t:50}
+};
+const PHASES = [
+  {k:'AUTO',      s:0,   e:20,  hub:'both'},
+  {k:'TRANSIÇÃO', s:20,  e:30,  hub:'both'},
+  {k:'SHIFT 1',   s:30,  e:55,  hub:1},
+  {k:'SHIFT 2',   s:55,  e:80,  hub:2},
+  {k:'SHIFT 3',   s:80,  e:105, hub:3},
+  {k:'SHIFT 4',   s:105, e:130, hub:4},
+  {k:'END GAME',  s:130, e:160, hub:'both'}
+];
+const L = {
+  sources:{depot:'Depot', outpost:'Outpost', neutra:'Zona neutra'},
+  routes:{bump:'Bump', trench:'Trench'},
+  intake:{chao:'Chão', outpost:'Outpost (HP)'},
+  issues:{parou:'Parou / morreu', tombou:'Tombou', brownout:'Brownout', quebrou:'Quebrou peça', travou:'Travou fuel', comms:'Perdeu conexão'},
+  tower:{none:'Não subiu', fail:'Tentou e falhou', L1:'Level 1', L2:'Level 2', L3:'Level 3'},
+  defense:['Nenhuma','Leve','Média','Forte'],
+  startPos:{depot:'Lado Depot', centro:'Centro', outpost:'Lado Outpost'},
+  card:{none:'Nenhum', yellow:'Amarelo', red:'Vermelho'},
+  drive:{swerve:'Swerve', tank:'Tank', mecanum:'Mecanum', outro:'Outro'},
+  shooter:{fixo:'Fixo', hood:'Hood ajustável', turret:'Torreta', sem:'Sem shooter'},
+  role:{pontuador:'Pontuador', passador:'Passador', defesa:'Defesa', coletor:'Coletor'},
+  yn:{sim:'Sim', nao:'Não'}
+};
+
+/* ===================== Utilidades ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const getP = (o,p) => p.split('.').reduce((a,k) => a == null ? undefined : a[k], o);
+const setP = (o,p,v) => { const ks = p.split('.'); let a = o; for (const k of ks.slice(0,-1)) a = a[k]; a[ks[ks.length-1]] = v; };
+const clone = o => JSON.parse(JSON.stringify(o));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fmt1 = n => (Math.round(n*10)/10).toLocaleString('pt-BR');
+const fmt0 = n => Math.round(n).toLocaleString('pt-BR');
+const pct = n => Math.round(n*100) + '%';
+const slug = s => (String(s||'').trim().replace(/[^A-Za-z0-9_\-.~:@+]+/g,'-').replace(/^[-.]+|[-.]+$/g,'') || 'evt').slice(0,60);
+const buzz = () => { try { navigator.vibrate && navigator.vibrate(8); } catch(e){} };
+const teamOk = t => /^\d{1,5}$/.test(String(t||''));
+
+const LS = {
+  get(k,d){ try { const v = localStorage.getItem('rebuiltscout:'+k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k,v){ try { localStorage.setItem('rebuiltscout:'+k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ===================== Estado ===================== */
+let settings = Object.assign({scout:'', event:'', myTeam:'', level:'reg'}, LS.get('settings', {}));
+let records  = LS.get('records', {});   // id -> registro (com _synced)
+let pits     = LS.get('pits', {});      // equipe -> pit (com _synced)
+let draft    = LS.get('draft', null) || newDraft();
+let pitDraft = LS.get('pitDraft', null) || newPit();
+let view     = 'partida';
+let ui       = {event:null, sort:'pts', sim:['','',''], modalTeam:null};
+let clock    = LS.get('clock', {start:null});
+let tickId   = null;
+
+let db = null, dbState = 'connecting', dbReadOnly = false, syncing = false;
+
+function newDraft(prev){
+  return {
+    id:null, match: prev ? (Number(prev.match)||0) + 1 : 1, team:'',
+    alliance: prev ? prev.alliance : '', station: prev ? prev.station : 0,
+    startPos:'', preload: prev ? prev.preload : 0, noShow:false, autoWinner:'', phase:'pre',
+    auto:{fuel:0, climb:false, sources:[], stalled:false},
+    tele:{fuel:0, passed:0, routes:[], intake:[], defense:0, accuracy:0, defended:false},
+    end:{tower:'none'},
+    post:{driver:0, issues:[], minor:0, major:0, card:'none'},
+    notes:'', history:[]
+  };
+}
+function newPit(){
+  return {team:'', drive:'', trench:'', bump:'', capacity:'', shooter:'', intake:[], climbMax:'', autoClimb:'', autoFuel:'', roles:[], weight:'', notes:''};
+}
+const saveDraft    = () => LS.set('draft', draft);
+const savePitDraft = () => LS.set('pitDraft', pitDraft);
+const saveSettings = () => LS.set('settings', settings);
+const persist      = () => { LS.set('records', records); LS.set('pits', pits); };
+const scopeObj = sc => sc === 'pit' ? pitDraft : sc === 'settings' ? settings : sc === 'ui' ? ui : draft;
+const scopeSave = sc => sc === 'pit' ? savePitDraft() : sc === 'settings' ? saveSettings() : sc === 'ui' ? null : saveDraft();
+
+function calcPts(d){
+  if (d.noShow) return 0;
+  return (d.auto.fuel||0) + (d.auto.climb ? AUTO_CLIMB_PTS : 0) + (d.tele.fuel||0) + (TOWER_PTS[d.end.tower]||0);
+}
+
+/* ===================== Componentes ===================== */
+function seg(k, opts, sc='draft', cls=''){
+  const cur = getP(scopeObj(sc), k);
+  return `<div class="seg ${cls}">${opts.map(([v,l]) =>
+    `<button class="${String(cur)===String(v)?'on':''}" data-action="set" data-scope="${sc}" data-k="${k}" data-v="${esc(v)}"${typeof v==='number'?' data-num':''}>${l}</button>`).join('')}</div>`;
+}
+function chips(k, map, sc='draft', cls=''){
+  const cur = getP(scopeObj(sc), k) || [];
+  return `<div class="chips">${Object.entries(map).map(([v,l]) =>
+    `<button class="chip ${cls} ${cur.includes(v)?'on':''}" data-action="arr" data-scope="${sc}" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+}
+function toggle(k, label, sub='', sc='draft'){
+  const on = !!getP(scopeObj(sc), k);
+  return `<button class="tgl ${on?'on':''}" data-action="flip" data-scope="${sc}" data-k="${k}"><div>${label}${sub?`<small>${sub}</small>`:''}</div><span class="sw"></span></button>`;
+}
+function stepper(k, min, max, sc='draft'){
+  const v = Number(getP(scopeObj(sc), k)) || 0;
+  return `<div class="stepper"><button data-action="step" data-scope="${sc}" data-k="${k}" data-d="-1" data-min="${min}" data-max="${max}">−</button>
+    <span>${v}</span><button data-action="step" data-scope="${sc}" data-k="${k}" data-d="1" data-min="${min}" data-max="${max}">+</button></div>`;
+}
+function stars(k, sc='draft'){
+  const v = Number(getP(scopeObj(sc), k)) || 0;
+  return `<div class="stars">${[1,2,3,4,5].map(i => `<button class="${i<=v?'on':''}" data-action="star" data-scope="${sc}" data-k="${k}" data-v="${i}">★</button>`).join('')}</div>`;
+}
+function counter(k, label, sub, size='hero', extra=''){
+  const v = getP(draft, k) || 0;
+  const btns = size === 'hero'
+    ? `<button class="minus" data-action="inc" data-k="${k}" data-d="-1">−1</button>
+       <button class="p1" data-action="inc" data-k="${k}" data-d="1">+1</button>
+       <button class="pn" data-action="inc" data-k="${k}" data-d="3">+3</button>
+       <button class="pn" data-action="inc" data-k="${k}" data-d="5">+5</button>
+       <button class="pn" data-action="inc" data-k="${k}" data-d="10">+10</button>`
+    : `<button class="minus" data-action="inc" data-k="${k}" data-d="-1">−1</button>
+       <button class="p1" data-action="inc" data-k="${k}" data-d="1">+1</button>
+       <button class="pn" data-action="inc" data-k="${k}" data-d="5">+5</button>`;
+  return `<div class="counter ${size} ${extra}" data-counter="${k}"><div class="c-head"><span>${label}</span><small>${sub||''}</small></div>
+    <div class="c-val" id="cv-${k.replace('.','-')}">${v}</div><div class="c-btns">${btns}</div></div>`;
+}
+const CNT_LABEL = {'auto.fuel':'Fuel auto', 'tele.fuel':'Fuel teleop', 'tele.passed':'Fuel passado'};
+function undoBtn(){
+  const h = draft.history || [];
+  const last = h[h.length-1];
+  const lbl = last ? ` · ${last.d>0?'+':''}${last.d} ${CNT_LABEL[last.k]||''}` : '';
+  return `<button class="undo" data-action="undo" ${last?'':'disabled'}>↶ Desfazer${lbl}</button>`;
+}
+
+/* ===================== Relógio da partida ===================== */
+function elapsed(){ return clock.start ? (Date.now() - clock.start) / 1000 : 0; }
+function curPhase(t){ return PHASES.find(p => t >= p.s && t < p.e) || null; }
+function hubStatus(p){
+  if (!p) return null;
+  if (p.hub === 'both') return 'on';
+  if (!draft.autoWinner) return 'unk';
+  // Shift 1 e 3: hub de quem venceu o auto fica inativo
+  const winnerInactive = (p.hub === 1 || p.hub === 3);
+  const weWon = draft.autoWinner === 'us';
+  return (weWon ? !winnerInactive : winnerInactive) ? 'on' : 'off';
+}
+function clockHTML(){
+  if (!clock.start) return `<button class="cstart" data-action="clock-start">▶ Iniciar</button>`;
+  const t = elapsed(), p = curPhase(t);
+  if (!p) return `<div class="clk"><small>FIM</small><b>0:00</b></div><button class="cstop" data-action="clock-stop" aria-label="Zerar relógio">■</button>`;
+  const left = Math.max(0, Math.ceil(p.e - t));
+  const hs = hubStatus(p);
+  const hubTxt = hs === 'on' ? 'HUB ATIVO' : hs === 'off' ? 'HUB INATIVO' : 'HUB ?';
+  return `<div class="clk"><small>${p.k}</small><b>${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</b><br><span class="hub ${hs}">${hubTxt}</span></div>
+    <button class="cstop" data-action="clock-stop" aria-label="Parar relógio">■</button>`;
+}
+function startTick(){
+  stopTick();
+  let lastPhase = curPhase(elapsed())?.k;
+  tickId = setInterval(() => {
+    const el = $('#clock'); if (el) el.innerHTML = clockHTML();
+    const p = curPhase(elapsed());
+    if (p?.k !== lastPhase){
+      // muda de fase automaticamente: auto -> teleop
+      if (lastPhase === 'AUTO' && draft.phase === 'auto'){ draft.phase = 'tele'; saveDraft(); if (view==='partida') render(); buzz(); }
+      if (p?.k === 'END GAME'){ buzz(); toast('End game — hora de subir na torre'); }
+      lastPhase = p?.k;
+      if (view==='partida') render();
+    }
+    if (!p && elapsed() > 165) stopTick();
+  }, 250);
+}
+function stopTick(){ if (tickId) clearInterval(tickId); tickId = null; }
+
+/* ===================== Views ===================== */
+function vPartida(){
+  const d = draft, ph = d.phase;
+  const order = ['pre','auto','tele','end','post'];
+  const steps = [['pre','Pré'],['auto','Auto'],['tele','Teleop'],['end','Endgame'],['post','Final']];
+  const idx = order.indexOf(ph);
+  const panes = {pre:pPre, auto:pAuto, tele:pTele, end:pEnd, post:pPost};
+  return `<div class="sticky">
+    ${d.id ? `<div class="editing">Editando Q${esc(d.match)} · ${esc(d.team)}<button data-action="cancel-edit">Cancelar</button></div>` : ''}
+    <div class="matchbar">
+      <div class="mb-id"><div><span class="mb-q">QUAL ${esc(d.match)}${d.station?` · ${d.alliance==='B'?'AZUL':d.alliance==='R'?'VERM.':''} ${d.station}`:''}</span>
+        <span class="mb-team" id="mbTeam">${d.team ? esc(d.team) : '—'}</span></div></div>
+      <div class="clock" id="clock">${clockHTML()}</div>
+    </div>
+    <div class="steps">${steps.map(([k,l],i) => `<button class="${ph===k?'on':i<idx?'done':''}" data-action="phase" data-v="${k}">${l}</button>`).join('')}</div>
+  </div>
+  <section class="pane">${panes[ph]()}</section>`;
+}
+function pPre(){
+  const d = draft;
+  return `
+  <div class="field"><label>Equipe</label>
+    <input class="inp big" id="teamInp" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" list="teamsList" data-bind="team" value="${esc(d.team)}" placeholder="0000"></div>
+  <div class="row2">
+    <div class="field"><label>Partida</label>${stepper('match',1,300)}</div>
+    <div class="field"><label>Fuel pré-carregado</label>${stepper('preload',0,8)}</div>
+  </div>
+  <div class="field"><label>Aliança</label><div class="alli">
+    <button class="a-R ${d.alliance==='R'?'on':''}" data-action="set" data-k="alliance" data-v="R"><i></i>Vermelha</button>
+    <button class="a-B ${d.alliance==='B'?'on':''}" data-action="set" data-k="alliance" data-v="B"><i></i>Azul</button></div></div>
+  <div class="field"><label>Estação</label>${seg('station',[[1,'1'],[2,'2'],[3,'3']])}</div>
+  <div class="field"><label>Posição inicial <em>vista da sua driver station</em></label>${seg('startPos',Object.entries(L.startPos))}</div>
+  ${toggle('noShow','Robô não apareceu','No-show: salva direto, fica fora das médias')}
+  ${d.noShow
+    ? `<button class="next" data-action="phase" data-v="post">Ir para o final →</button>`
+    : `<button class="next" data-action="phase" data-v="auto">Ir para o Auto →</button>`}`;
+}
+function pAuto(){
+  return `
+  <div class="toprow">${undoBtn()}<span class="muted">20 s · fuel vale 1 pt</span></div>
+  ${counter('auto.fuel','Fuel no HUB','Auto')}
+  <div class="field"><label>Pegou fuel de</label>${chips('auto.sources', L.sources)}</div>
+  ${toggle('auto.climb','Subiu no Level 1 da torre','+15 pts no auto · máx. 2 robôs por aliança')}
+  ${toggle('auto.stalled','Ficou parado / auto falhou')}
+  <button class="next" data-action="phase" data-v="tele">Ir para o Teleop →</button>`;
+}
+function pTele(){
+  const d = draft;
+  const p = clock.start ? curPhase(elapsed()) : null;
+  const hs = hubStatus(p);
+  return `
+  <div class="field"><label>Quem venceu o auto? <em>define os shifts do HUB</em></label>
+    ${seg('autoWinner',[['us','Aliança deste robô'],['them','Adversária']])}</div>
+  <div class="toprow">${undoBtn()}</div>
+  ${counter('tele.fuel','Fuel no HUB ativo','1 pt cada', 'hero', hs==='off'?'dim':'')}
+  ${hs==='off' ? `<div class="hint">HUB inativo agora — fuel não pontua neste shift</div>` : ''}
+  ${counter('tele.passed','Fuel passado','lançado pra zona da aliança','small')}
+  <div class="row2">
+    <div class="field"><label>Atravessou por</label>${chips('tele.routes', L.routes)}</div>
+    <div class="field"><label>Coleta</label>${chips('tele.intake', L.intake)}</div>
+  </div>
+  <div class="field"><label>Defesa jogada</label>${seg('tele.defense', L.defense.map((l,i)=>[i,l]))}</div>
+  <div class="field"><label>Precisão no arremesso</label>${stars('tele.accuracy')}</div>
+  ${toggle('tele.defended','Sofreu defesa pesada','Marque se o desempenho foi prejudicado')}
+  <button class="next" data-action="phase" data-v="end">Ir para o Endgame →</button>`;
+}
+function pEnd(){
+  const cur = draft.end.tower;
+  const lv = (k, n) => `<button class="${cur===k?'on':''}" data-action="set" data-k="end.tower" data-v="${k}">
+     <span class="rung">${[1,2,3].map(i=>`<i class="${i<=n?'f':''}"></i>`).join('')}</span><span>${L.tower[k]}</span><em>+${TOWER_PTS[k]}</em></button>`;
+  return `
+  <div class="field"><label>Torre <em>teleop</em></label>
+    <div class="tower">${lv('L3',3)}${lv('L2',2)}${lv('L1',1)}</div>
+    ${seg('end.tower',[['fail','Tentou e falhou'],['none','Não subiu']])}
+  </div>
+  <div class="toprow">${undoBtn()}</div>
+  ${counter('tele.fuel','Fuel no HUB','continua contando no end game','small')}
+  <button class="next" data-action="phase" data-v="post">Ir para o Final →</button>`;
+}
+function pPost(){
+  const d = draft;
+  const pts = calcPts(d);
+  return `
+  <div class="sum">
+    <div class="tot"><span>Pontos estimados</span><b>${pts}</b></div>
+    ${d.noShow ? `<div class="ln"><span>No-show</span><b>0</b></div>` : `
+    <div class="ln"><span>Fuel no auto</span><b>${d.auto.fuel}</b></div>
+    <div class="ln"><span>Torre no auto</span><b>${d.auto.climb?AUTO_CLIMB_PTS:0}</b></div>
+    <div class="ln"><span>Fuel no teleop</span><b>${d.tele.fuel}</b></div>
+    <div class="ln"><span>Torre (${L.tower[d.end.tower]})</span><b>${TOWER_PTS[d.end.tower]}</b></div>`}
+  </div>
+  ${d.noShow ? '' : `
+  <div class="field"><label>Habilidade do piloto</label>${stars('post.driver')}</div>
+  <div class="field"><label>Problemas</label>${chips('post.issues', L.issues, 'draft', 'bad')}</div>
+  <div class="row2">
+    <div class="field"><label>Minor fouls</label>${stepper('post.minor',0,30)}</div>
+    <div class="field"><label>Major fouls</label>${stepper('post.major',0,30)}</div>
+  </div>
+  <div class="field"><label>Cartão</label>${seg('post.card', Object.entries(L.card))}</div>`}
+  <div class="field"><label>Observações</label><textarea class="inp" data-bind="notes" placeholder="Estratégia, pontos fortes, o que chamou atenção…">${esc(d.notes)}</textarea></div>
+  <button class="save" data-action="save-match">${d.id ? 'Salvar alterações' : 'Salvar partida'}</button>
+  <button class="ghost" data-action="discard">Descartar e limpar</button>`;
+}
+
+function vPit(){
+  const p = pitDraft;
+  const list = Object.values(pits).sort((a,b) => +a.team - +b.team);
+  const yn = [['sim','Sim'],['nao','Não']];
+  return `<div class="h1row"><h1>Pit scouting</h1><span class="muted">${list.length} equipe${list.length===1?'':'s'}</span></div>
+  ${list.length ? `<div class="scroller">${list.map(x => `<button class="chip ${x.team===p.team?'on':''}" data-action="pit-load" data-v="${esc(x.team)}">${esc(x.team)}${x._synced?'':' •'}</button>`).join('')}</div>` : ''}
+  <div class="field"><label>Equipe</label><input class="inp big" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" list="teamsList" data-scope="pit" data-bind="team" value="${esc(p.team)}" placeholder="0000"></div>
+  <div class="field"><label>Tração</label>${seg('drive', Object.entries(L.drive), 'pit')}</div>
+  <div class="row2">
+    <div class="field"><label>Passa no Trench?</label>${seg('trench', yn, 'pit')}</div>
+    <div class="field"><label>Passa no Bump?</label>${seg('bump', yn, 'pit')}</div>
+  </div>
+  <div class="field"><label>Shooter</label>${seg('shooter', Object.entries(L.shooter), 'pit', 'wrap')}</div>
+  <div class="row2">
+    <div class="field"><label>Capacidade de fuel</label><input class="inp" inputmode="numeric" data-scope="pit" data-bind="capacity" value="${esc(p.capacity)}" placeholder="ex: 40"></div>
+    <div class="field"><label>Fuel no auto</label><input class="inp" inputmode="numeric" data-scope="pit" data-bind="autoFuel" value="${esc(p.autoFuel)}" placeholder="estimado"></div>
+  </div>
+  <div class="field"><label>Coleta</label>${chips('intake', L.intake, 'pit')}</div>
+  <div class="field"><label>Escalada máxima</label>${seg('climbMax', [['none','Não'],['L1','L1'],['L2','L2'],['L3','L3']], 'pit')}</div>
+  <div class="field"><label>Sobe L1 no auto?</label>${seg('autoClimb', yn, 'pit')}</div>
+  <div class="field"><label>Função preferida</label>${chips('roles', L.role, 'pit')}</div>
+  <div class="field"><label>Peso (lb)</label><input class="inp" inputmode="decimal" data-scope="pit" data-bind="weight" value="${esc(p.weight)}" placeholder="ex: 115"></div>
+  <div class="field"><label>Observações</label><textarea class="inp" data-scope="pit" data-bind="notes" placeholder="Autos disponíveis, pontos fracos, o que a equipe destacou…">${esc(p.notes)}</textarea></div>
+  <button class="save" data-action="save-pit">Salvar pit</button>
+  <button class="ghost" data-action="pit-new">Limpar formulário</button>`;
+}
+
+function computeStats(recs){
+  const by = {};
+  recs.forEach(r => { (by[r.team] ||= []).push(r); });
+  return Object.entries(by).map(([team, rs]) => {
+    rs = rs.slice().sort((a,b) => (a.match||0) - (b.match||0));
+    const pl = rs.filter(r => !r.noShow), n = pl.length;
+    const avg = f => n ? pl.reduce((s,r) => s + (Number(f(r))||0), 0) / n : 0;
+    const tc = {none:0, fail:0, L1:0, L2:0, L3:0};
+    pl.forEach(r => { const k = r.end?.tower || 'none'; tc[k] = (tc[k]||0) + 1; });
+    const climbs = tc.L1 + tc.L2 + tc.L3;
+    const drv = pl.filter(r => r.post?.driver > 0);
+    const pts = avg(r => r.pts);
+    const sd = n > 1 ? Math.sqrt(pl.reduce((s,r) => s + ((r.pts||0) - pts)**2, 0) / (n-1)) : 0;
+    const issues = {};
+    pl.forEach(r => (r.post?.issues||[]).forEach(i => issues[i] = (issues[i]||0) + 1));
+    return {
+      team, rs, n, noShows: rs.length - n, pts, sd,
+      autoFuel: avg(r => r.auto?.fuel), teleFuel: avg(r => r.tele?.fuel), passed: avg(r => r.tele?.passed),
+      fuel: avg(r => (r.auto?.fuel||0) + (r.tele?.fuel||0)),
+      autoPts: avg(r => (r.auto?.fuel||0) + (r.auto?.climb ? AUTO_CLIMB_PTS : 0)),
+      towerPts: avg(r => (TOWER_PTS[r.end?.tower]||0) + (r.auto?.climb ? AUTO_CLIMB_PTS : 0)),
+      endPts: avg(r => TOWER_PTS[r.end?.tower]||0),
+      autoClimb: n ? pl.filter(r => r.auto?.climb).length / n : 0,
+      climbRate: n ? climbs / n : 0, tc,
+      best: tc.L3 ? 'L3' : tc.L2 ? 'L2' : tc.L1 ? 'L1' : '—',
+      driver: drv.length ? drv.reduce((s,r) => s + r.post.driver, 0) / drv.length : 0,
+      defense: avg(r => r.tele?.defense),
+      issues, issueMatches: pl.filter(r => (r.post?.issues||[]).length).length,
+      maxPts: n ? Math.max(...pl.map(r => r.pts||0)) : 0
+    };
+  });
+}
+const SORTS = {
+  pts:     ['Pontos', s => s.pts],
+  fuel:    ['Fuel', s => s.fuel],
+  auto:    ['Auto', s => s.autoPts],
+  torre:   ['Torre', s => s.endPts + s.climbRate*0.01],
+  passado: ['Passes', s => s.passed],
+  piloto:  ['Piloto', s => s.driver],
+  defesa:  ['Defesa', s => s.defense]
+};
+function filteredRecords(){
+  const all = Object.values(records);
+  const evs = [...new Set(all.map(r => r.event || ''))].sort();
+  let ev = ui.event;
+  if (ev == null || (ev !== '__all' && !evs.includes(ev))) ev = evs.includes(settings.event) ? settings.event : '__all';
+  return {evs, ev, recs: all.filter(r => ev === '__all' || (r.event||'') === ev)};
+}
+function vDados(){
+  const {evs, ev, recs} = filteredRecords();
+  const stats = computeStats(recs);
+  const [, sf] = SORTS[ui.sort] || SORTS.pts;
+  stats.sort((a,b) => sf(b) - sf(a) || a.team - b.team);
+  const maxV = Math.max(1, ...stats.map(sf));
+  const latest = recs.slice().sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 12);
+
+  const table = stats.length ? stats.map((s,i) => {
+    const v = sf(s);
+    const shown = ui.sort==='pts' ? fmt1(s.pts) : ui.sort==='fuel' ? fmt1(s.fuel) : ui.sort==='auto' ? fmt1(s.autoPts)
+      : ui.sort==='torre' ? (s.best) : ui.sort==='passado' ? fmt1(s.passed) : ui.sort==='piloto' ? (s.driver?fmt1(s.driver)+'★':'—') : fmt1(s.defense);
+    const unit = ui.sort==='pts' ? 'PTS/JOGO' : ui.sort==='fuel' ? 'FUEL/JOGO' : ui.sort==='auto' ? 'PTS AUTO' : ui.sort==='torre' ? pct(s.climbRate)+' SOBE' : ui.sort==='passado' ? 'PASSES' : ui.sort==='piloto' ? 'PILOTO' : 'DEFESA 0–3';
+    return `<button class="trow" data-action="team" data-v="${esc(s.team)}">
+      <span class="rk">${i+1}</span>
+      <div><div class="tn">${esc(s.team)}${pits[s.team] ? '<span class="badge pit">PIT</span>' : ''}${settings.myTeam && settings.myTeam===s.team ? '<span class="badge">NÓS</span>':''}</div>
+        <div class="meta"><b>${fmt1(s.pts)}</b> pts · auto ${fmt1(s.autoFuel)} · tele ${fmt1(s.teleFuel)} · torre ${s.best} · ${s.n} jogo${s.n===1?'':'s'}</div></div>
+      <div class="pv"><b>${shown}</b><small>${unit}</small></div>
+      <div class="bar"><i style="width:${Math.max(3, v/maxV*100)}%"></i></div>
+    </button>`;
+  }).join('') : `<div class="empty"><b>Nenhuma partida ainda</b>Os dados aparecem aqui assim que alguém salvar uma partida na aba Partida.</div>`;
+
+  return `<div class="h1row"><h1>Dados</h1><span class="muted">${recs.length} partida${recs.length===1?'':'s'} · ${stats.length} equipe${stats.length===1?'':'s'}</span></div>
+  ${evs.length > 1 || (evs.length===1 && evs[0]!==settings.event) ? `<div class="scroller">
+    <button class="chip ${ev==='__all'?'on':''}" data-action="set" data-scope="ui" data-k="event" data-v="__all">Todos eventos</button>
+    ${evs.map(e => `<button class="chip ${ev===e?'on':''}" data-action="set" data-scope="ui" data-k="event" data-v="${esc(e)}">${esc(e||'Sem evento')}</button>`).join('')}</div>` : ''}
+  <div class="dados-grid">
+   <div>
+    <div class="scroller">${Object.entries(SORTS).map(([k,[l]]) => `<button class="chip ${ui.sort===k?'on':''}" data-action="set" data-scope="ui" data-k="sort" data-v="${k}">${l}</button>`).join('')}</div>
+    ${table}
+   </div>
+   <div>
+    <h2>Simular aliança</h2>
+    ${vSim(stats)}
+    <h2>Últimas partidas</h2>
+    ${latest.length ? `<div class="card" style="padding:4px 14px">${latest.map(r => `<button class="mrow" data-action="team" data-v="${esc(r.team)}">
+        <span class="l"><span class="dot ${r._synced||!db?esc(r.alliance):'pend'}"></span><span class="q">Q${esc(r.match)}</span><span class="t">${esc(r.team)}</span><small>${r.noShow?'no-show':L.tower[r.end?.tower]||''}${r.scout?' · '+esc(r.scout):''}</small></span>
+        <span class="p">${r.pts||0}</span></button>`).join('')}</div>` : `<div class="empty">Nada por aqui ainda.</div>`}
+   </div>
+  </div>`;
+}
+function vSim(stats){
+  const th = THRESH[settings.level] || THRESH.reg;
+  const by = Object.fromEntries(stats.map(s => [s.team, s]));
+  const picked = ui.sim.map(t => by[t]).filter(Boolean);
+  const total = picked.reduce((a,s) => a + s.pts, 0);
+  const fuel  = picked.reduce((a,s) => a + s.fuel, 0);
+  const tower = picked.reduce((a,s) => a + s.towerPts, 0);
+  const meter = (label, val, thr, max) => {
+    const ok = val >= thr;
+    return `<div class="meter"><div class="mh"><span>${label}</span><b class="${ok?'ok':''}">${fmt0(val)} / ${thr}${ok?' ✓':''}</b></div>
+      <div class="track"><i class="${ok?'ok':''}" style="width:${Math.min(100, val/max*100)}%"></i><u style="left:${thr/max*100}%"></u></div></div>`;
+  };
+  return `<div class="card">
+    <div class="sim">${[0,1,2].map(i => `<input class="inp" inputmode="numeric" maxlength="5" list="teamsList" placeholder="Equipe" data-scope="ui" data-bind="sim.${i}" data-live="sim" value="${esc(ui.sim[i])}">`).join('')}</div>
+    <div id="simOut">${picked.length ? `
+      <div class="bigpred"><span>Placar previsto<br>(sem faltas)</span><b>${fmt0(total)}</b></div>
+      ${meter('Energized RP · fuel', fuel, th.e, Math.max(th.s, fuel)*1.05)}
+      ${meter('Supercharged RP · fuel', fuel, th.s, Math.max(th.s, fuel)*1.05)}
+      ${meter('Traversal RP · pts de torre', tower, th.t, Math.max(th.t*1.6, tower*1.05))}
+      <div class="muted" style="font-size:12px">Limites de ${th.label} (ajuste em Ajustes). Baseado nas médias do scouting.</div>`
+      : `<div class="muted" style="font-size:13px;line-height:1.5">Digite até 3 equipes já scouteadas para ver o placar médio previsto e a chance de bater os bônus de RP.</div>`}</div>
+  </div>`;
+}
+
+function vAjustes(){
+  const nRec = Object.keys(records).length, nPit = Object.keys(pits).length;
+  const pend = pendingCount();
+  const th = THRESH[settings.level] || THRESH.reg;
+  let syncTxt;
+  if (!db) syncTxt = `Este aparelho não está conectado ao banco compartilhado (precisa abrir o app logado no claude.ai). Tudo fica salvo <b>só neste aparelho</b> — use Exportar/Importar pra juntar os dados.`;
+  else if (dbReadOnly) syncTxt = `Você pode <b>ver</b> os dados do time, mas não enviar. Peça pro dono do app te dar acesso de <b>Colaborador</b> (Contributor). Suas partidas ficam salvas aqui até lá.`;
+  else syncTxt = `Cada partida salva vai pro banco compartilhado e aparece em tempo real pra todos os scouts. Sem internet, fica na fila e envia sozinha quando voltar. ${pend ? `<b>${pend} pendente${pend>1?'s':''}.</b>` : '<b>Tudo sincronizado.</b>'}`;
+  return `<div class="h1row"><h1>Ajustes</h1></div>
+  <div class="field"><label>Seu nome (scout)</label><input class="inp" data-scope="settings" data-bind="scout" value="${esc(settings.scout)}" placeholder="ex: João"></div>
+  <div class="row2">
+    <div class="field"><label>Evento</label><input class="inp" data-scope="settings" data-bind="event" value="${esc(settings.event)}" placeholder="ex: 2026brce"></div>
+    <div class="field"><label>Nossa equipe</label><input class="inp" inputmode="numeric" maxlength="5" data-scope="settings" data-bind="myTeam" value="${esc(settings.myTeam)}" placeholder="0000"></div>
+  </div>
+  <div class="field"><label>Nível do evento <em>limites de RP</em></label>${seg('level', [['reg','Regional'],['dcmp','DCMP'],['cmp','Mundial']], 'settings')}</div>
+
+  <h2>Sincronização</h2>
+  <div class="card"><p class="p">${syncTxt}</p>
+    ${db && !dbReadOnly ? `<div class="btnrow" style="grid-template-columns:1fr"><button class="btn" data-action="sync">Sincronizar agora</button></div>` : ''}</div>
+
+  <h2>Exportar e importar</h2>
+  <div class="card">
+    <p class="p" style="margin-bottom:12px">${nRec} partida${nRec===1?'':'s'} e ${nPit} pit${nPit===1?'':'s'} neste aparelho. “Copiar planilha” cola direto no Google Sheets ou Excel, uma coluna por campo.</p>
+    <div class="btnrow"><button class="btn y" data-action="export-tsv">Copiar planilha</button><button class="btn" data-action="export-json">Copiar backup</button></div>
+    <div class="sec">Importar backup de outro aparelho</div>
+    <textarea class="inp" id="importBox" placeholder="Cole aqui o backup (JSON)" style="min-height:80px;font-size:13px"></textarea>
+    <div class="btnrow" style="grid-template-columns:1fr"><button class="btn" data-action="import">Importar</button></div>
+  </div>
+
+  <h2>Pontuação REBUILT</h2>
+  <div class="card"><div class="rules">
+    <span>Fuel no HUB ativo (auto e teleop)</span><b>1</b>
+    <span>Torre Level 1 no auto (máx. 2 robôs)</span><b>15</b>
+    <span>Torre Level 1 / 2 / 3 no teleop</span><b>10 / 20 / 30</b>
+    <span>Energized RP (fuel)</span><b>${th.e}</b>
+    <span>Supercharged RP (fuel)</span><b>${th.s}</b>
+    <span>Traversal RP (pts de torre)</span><b>${th.t}</b>
+    <span>Minor / Major foul (pro adversário)</span><b>5 / 15</b>
+  </div></div>
+
+  <h2>Zona de perigo</h2>
+  <div class="card"><p class="p" style="margin-bottom:12px">Apaga as partidas e pits guardados <b>neste aparelho</b>. O que já foi sincronizado continua no banco do time.</p>
+    <button class="btn r" style="width:100%" data-action="wipe">Apagar dados deste aparelho</button></div>`;
+}
+
+/* ===================== Modal de equipe ===================== */
+function teamSheet(team){
+  const {recs} = filteredRecords();
+  const s = computeStats(recs.filter(r => r.team === team))[0];
+  const p = pits[team];
+  if (!s && !p) return `<div class="empty">Sem dados pra essa equipe.</div>`;
+  let html = `<div class="sheet-h"><h3><small>EQUIPE</small>${esc(team)}</h3><button class="x" data-action="close">✕</button></div>`;
+  if (s && s.n){
+    const W = 300, H = 110, n = s.rs.length, bw = Math.min(26, (W - 10) / Math.max(n,1) - 4);
+    const maxP = Math.max(10, ...s.rs.map(r => r.pts||0));
+    const bars = s.rs.map((r,i) => {
+      const x = 5 + i * ((W-10)/n) + ((W-10)/n - bw)/2;
+      if (r.noShow) return `<text x="${x+bw/2}" y="${H-4}" fill="#5E6672" font-size="9" text-anchor="middle">NS</text>`;
+      const parts = [[ (r.auto?.fuel||0) + (r.auto?.climb?AUTO_CLIMB_PTS:0), '#FFE08A'], [r.tele?.fuel||0, '#FFC21A'], [TOWER_PTS[r.end?.tower]||0, '#3D8BFF']];
+      let y = H - 16;
+      const rects = parts.map(([v,c]) => { const h = v / maxP * (H - 30); y -= h; return h > 0 ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" fill="${c}" rx="2"/>` : ''; }).join('');
+      return rects + `<text x="${x+bw/2}" y="${H-3}" fill="#8A929F" font-size="9" text-anchor="middle" font-family="Chakra Petch">${esc(r.match)}</text>
+        <text x="${x+bw/2}" y="${y-3}" fill="#ECEEF1" font-size="9" text-anchor="middle" font-family="Chakra Petch">${r.pts||0}</text>`;
+    }).join('');
+    const tcol = {L3:'#FFC21A', L2:'#FFD45A', L1:'#FFE08A', fail:'#FF5C5C', none:'#2E343E'};
+    const dist = ['L3','L2','L1','fail','none'].filter(k => s.tc[k]).map(k =>
+      `<div style="flex:${s.tc[k]};background:${tcol[k]};color:${k==='none'?'#8A929F':'#111'}">${k==='none'?'—':k==='fail'?'✕':k} ${s.tc[k]}</div>`).join('');
+    html += `<div class="kpis">
+      <div class="kpi"><small>Pts/jogo</small><b class="y">${fmt1(s.pts)}</b><em>±${fmt0(s.sd)}</em></div>
+      <div class="kpi"><small>Máximo</small><b>${s.maxPts}</b></div>
+      <div class="kpi"><small>Jogos</small><b>${s.n}</b>${s.noShows?`<em>+${s.noShows} NS</em>`:''}</div>
+      <div class="kpi"><small>Fuel auto</small><b>${fmt1(s.autoFuel)}</b></div>
+      <div class="kpi"><small>Fuel tele</small><b>${fmt1(s.teleFuel)}</b></div>
+      <div class="kpi"><small>Passes</small><b>${fmt1(s.passed)}</b></div>
+      <div class="kpi"><small>Torre</small><b>${s.best}</b><em>${pct(s.climbRate)}</em></div>
+      <div class="kpi"><small>L1 no auto</small><b>${pct(s.autoClimb)}</b></div>
+      <div class="kpi"><small>Piloto</small><b>${s.driver?fmt1(s.driver):'—'}</b><em>★</em></div>
+    </div>
+    <div class="sec">Pontos por partida</div>
+    <div class="chart"><div class="legend"><span><i style="background:#FFE08A"></i>Auto</span><span><i style="background:#FFC21A"></i>Fuel tele</span><span><i style="background:#3D8BFF"></i>Torre</span></div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Pontos por partida">${bars}</svg></div>
+    <div class="sec">Torre no endgame</div><div class="dist">${dist}</div>
+    ${Object.keys(s.issues).length ? `<div class="sec">Problemas (${s.issueMatches} de ${s.n} jogos)</div><div class="chips">${Object.entries(s.issues).map(([k,c]) => `<span class="chip bad on" style="padding:8px 11px;font-size:13px">${L.issues[k]||k} · ${c}</span>`).join('')}</div>` : ''}
+    <div class="sec">Estilo</div><div class="pitgrid">
+      <span>Defesa média</span><b>${L.defense[Math.round(s.defense)]||'—'}</b>
+      <span>Rotas</span><b>${tally(s.rs, r => r.tele?.routes, L.routes) || '—'}</b>
+      <span>Coleta</span><b>${tally(s.rs, r => r.tele?.intake, L.intake) || '—'}</b>
+      <span>Fuel do auto vem de</span><b>${tally(s.rs, r => r.auto?.sources, L.sources) || '—'}</b>
+    </div>`;
+  }
+  if (p){
+    html += `<div class="sec">Pit</div><div class="card" style="padding:12px 14px;margin:0"><div class="pitgrid">
+      <span>Tração</span><b>${L.drive[p.drive]||'—'}</b>
+      <span>Trench / Bump</span><b>${L.yn[p.trench]||'?'} / ${L.yn[p.bump]||'?'}</b>
+      <span>Shooter</span><b>${L.shooter[p.shooter]||'—'}</b>
+      <span>Capacidade</span><b>${esc(p.capacity)||'—'}</b>
+      <span>Escalada máx.</span><b>${p.climbMax==='none'?'Não sobe':esc(p.climbMax)||'—'}</b>
+      <span>L1 no auto</span><b>${L.yn[p.autoClimb]||'—'}</b>
+      <span>Fuel no auto</span><b>${esc(p.autoFuel)||'—'}</b>
+      <span>Função</span><b>${(p.roles||[]).map(r=>L.role[r]).join(', ')||'—'}</b>
+    </div>${p.notes?`<div class="p" style="margin-top:10px">${esc(p.notes)}</div>`:''}</div>`;
+  }
+  if (s){
+    const notes = s.rs.filter(r => r.notes);
+    if (notes.length) html += `<div class="sec">Observações</div>${notes.map(r => `<div class="note"><small>Q${esc(r.match)}${r.scout?' · '+esc(r.scout):''}</small>${esc(r.notes)}</div>`).join('')}`;
+    html += `<div class="sec">Partidas</div><div class="card" style="padding:2px 14px;margin:0">${s.rs.slice().reverse().map(r => `<div class="mrow">
+      <span class="l"><span class="dot ${esc(r.alliance)}"></span><span class="q">Q${esc(r.match)}</span><small>${r.noShow?'no-show':`${r.pts} pts · ${L.tower[r.end?.tower]||''}`}${r.scout?' · '+esc(r.scout):''}</small></span>
+      <span style="display:flex;gap:6px;flex:none"><button class="mini" data-action="edit" data-v="${esc(r.id)}">Editar</button><button class="mini del" data-action="del" data-v="${esc(r.id)}">Excluir</button></span></div>`).join('')}</div>`;
+  }
+  return html;
+}
+function tally(rs, f, map){
+  const c = {}; rs.forEach(r => (f(r)||[]).forEach(v => c[v] = (c[v]||0) + 1));
+  return Object.entries(c).sort((a,b) => b[1]-a[1]).map(([k,n]) => `${map[k]||k} (${n})`).join(', ');
+}
+
+/* ===================== Modal / toast ===================== */
+function openModal(html){ const m = $('#modal'); m.innerHTML = `<div class="backdrop" data-action="close"></div><div class="sheet"><div class="grab"></div>${html}</div>`; m.classList.add('open'); }
+function closeModal(){ const m = $('#modal'); m.classList.remove('open'); m.innerHTML = ''; ui.modalTeam = null; }
+function confirmBox(title, msg, yes, onYes){
+  openModal(`<div class="sheet-h"><h3 style="font-size:22px">${title}</h3><button class="x" data-action="close">✕</button></div><p class="p">${msg}</p>
+    <div class="btnrow" style="margin-top:18px"><button class="btn" data-action="close">Cancelar</button><button class="btn r" id="cfYes">${yes}</button></div>`);
+  $('#cfYes').onclick = () => { closeModal(); onYes(); };
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+async function copyText(txt, label){
+  try { await navigator.clipboard.writeText(txt); toast(label + ' copiado'); }
+  catch(e){
+    openModal(`<div class="sheet-h"><h3 style="font-size:22px">Copie manualmente</h3><button class="x" data-action="close">✕</button></div>
+      <p class="p" style="margin-bottom:10px">O navegador bloqueou a cópia automática. Toque no campo, selecione tudo e copie.</p>
+      <textarea class="inp copybox" readonly id="copyBox">${esc(txt)}</textarea>`);
+    const b = $('#copyBox'); b.focus(); b.select();
+  }
+}
+
+/* ===================== Render ===================== */
+const VIEWS = {partida:vPartida, pit:vPit, dados:vDados, ajustes:vAjustes};
+function render(){
+  const main = $('#view');
+  main.className = view === 'dados' ? 'wide' : '';
+  main.innerHTML = VIEWS[view]();
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
+  document.body.className = view === 'partida' && draft.alliance ? (draft.alliance === 'R' ? 'red' : 'blue') : '';
+  updateTeamsList();
+  updateSyncPill();
+}
+function go(v){
+  if (!VIEWS[v]) v = 'partida';
+  if (location.hash.slice(1) !== v) { try { location.hash = v; } catch(e){} }
+  view = v; render(); window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (VIEWS[v] && v !== view){ view = v; render(); window.scrollTo(0,0); } });
+function updateTeamsList(){
+  const set = new Set([...Object.values(records).map(r => r.team), ...Object.keys(pits)]);
+  $('#teamsList').innerHTML = [...set].filter(Boolean).sort((a,b) => a-b).map(t => `<option value="${esc(t)}">`).join('');
+}
+function bumpEl(k){
+  const el = document.getElementById('cv-' + k.replace('.','-'));
+  if (el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+}
+function measureHeader(){ document.documentElement.style.setProperty('--hh', $('#top').offsetHeight + 'px'); }
+
+/* ===================== Eventos ===================== */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]'); if (!b) return;
+  const a = b.dataset.action, k = b.dataset.k, sc = b.dataset.scope || 'draft', obj = scopeObj(sc);
+  switch (a){
+    case 'nav': go(b.dataset.v); break;
+    case 'phase':
+      if (b.dataset.v !== 'pre' && draft.phase === 'pre' && !teamOk(draft.team)){ toast('Coloque o número da equipe'); $('#teamInp')?.focus(); return; }
+      draft.phase = b.dataset.v; saveDraft(); render(); window.scrollTo(0,0); break;
+    case 'inc': {
+      const d = +b.dataset.d, cur = Number(getP(draft,k)) || 0, nv = Math.max(0, cur + d);
+      if (nv === cur) return;
+      setP(draft, k, nv); draft.history.push({k, d: nv - cur}); if (draft.history.length > 200) draft.history.shift();
+      buzz(); saveDraft();
+      const el = document.getElementById('cv-' + k.replace('.','-')); if (el) el.textContent = nv;
+      const u = document.querySelector('.undo'); if (u) u.outerHTML = undoBtn();
+      bumpEl(k); break;
+    }
+    case 'undo': {
+      const h = draft.history.pop(); if (!h) return;
+      setP(draft, h.k, Math.max(0, (Number(getP(draft,h.k))||0) - h.d)); saveDraft(); render(); bumpEl(h.k); break;
+    }
+    case 'set': {
+      let v = b.dataset.v; if (b.hasAttribute('data-num')) v = Number(v);
+      if (sc === 'ui'){ ui[k] = v; render(); return; }
+      if (sc === 'pit' && getP(obj,k) === v) v = '';   // toque de novo desmarca
+      setP(obj, k, v); scopeSave(sc); buzz(); render(); break;
+    }
+    case 'flip': setP(obj, k, !getP(obj,k)); scopeSave(sc); buzz(); render(); break;
+    case 'arr': {
+      const arr = (getP(obj,k) || []).slice(), v = b.dataset.v, i = arr.indexOf(v);
+      i >= 0 ? arr.splice(i,1) : arr.push(v); setP(obj, k, arr); scopeSave(sc); buzz(); render(); break;
+    }
+    case 'step': {
+      const v = Math.min(+b.dataset.max, Math.max(+b.dataset.min, (Number(getP(obj,k))||0) + +b.dataset.d));
+      setP(obj, k, v); scopeSave(sc); buzz(); render(); break;
+    }
+    case 'star': { const v = +b.dataset.v; setP(obj, k, getP(obj,k) === v ? 0 : v); scopeSave(sc); buzz(); render(); break; }
+    case 'clock-start':
+      clock = {start: Date.now()}; LS.set('clock', clock);
+      if (draft.phase === 'pre'){
+        if (!teamOk(draft.team)){ toast('Coloque o número da equipe antes'); clock = {start:null}; LS.set('clock', clock); $('#teamInp')?.focus(); return; }
+        draft.phase = 'auto'; saveDraft();
+      }
+      startTick(); buzz(); render(); break;
+    case 'clock-stop': clock = {start:null}; LS.set('clock', clock); stopTick(); render(); break;
+    case 'save-match': saveMatch(); break;
+    case 'discard': confirmBox('Descartar partida?', 'Tudo que foi marcado nesta partida será perdido.', 'Descartar', () => {
+        if (draft.id){ draft = LS.get('draftBackup', null) || newDraft(); LS.set('draftBackup', null); }
+        else { const k = draft; draft = Object.assign(newDraft(), {match:k.match, alliance:k.alliance, station:k.station, preload:k.preload}); }
+        clock = {start:null}; LS.set('clock', clock); stopTick(); saveDraft(); render(); }); break;
+    case 'cancel-edit': draft = LS.get('draftBackup', null) || newDraft(); saveDraft(); render(); break;
+    case 'save-pit': savePit(); break;
+    case 'pit-new': pitDraft = newPit(); savePitDraft(); render(); break;
+    case 'pit-load': { const p = pits[b.dataset.v]; if (p){ pitDraft = Object.assign(newPit(), clone(p)); delete pitDraft._synced; delete pitDraft.ts; savePitDraft(); render(); } break; }
+    case 'team': ui.modalTeam = b.dataset.v; openModal(teamSheet(b.dataset.v)); break;
+    case 'close': closeModal(); break;
+    case 'edit': {
+      const r = records[b.dataset.v]; if (!r) return;
+      if (!draft.id) LS.set('draftBackup', draft);
+      draft = Object.assign(newDraft(), clone(r), {phase:'pre', history:[]}); delete draft._synced;
+      saveDraft(); closeModal(); go('partida'); break;
+    }
+    case 'del': {
+      const id = b.dataset.v, r = records[id]; if (!r) return;
+      confirmBox('Excluir partida?', `Q${esc(r.match)} da equipe ${esc(r.team)} será apagada${db?' para todo o time':''}.`, 'Excluir', async () => {
+        delete records[id]; persist(); render();
+        if (db && !dbReadOnly){ try { await db.collection('matches').doc(id).delete(); } catch(err){ handleDbErr(err); } }
+        toast('Partida excluída');
+      }); break;
+    }
+    case 'sync': manualSync(); break;
+    case 'export-tsv': copyText(toTSV(), 'Planilha'); break;
+    case 'export-json': copyText(JSON.stringify({app:'rebuilt-scout', v:1, records:Object.values(records).map(stripMeta), pits:Object.values(pits).map(stripMeta)}), 'Backup'); break;
+    case 'import': importData(); break;
+    case 'wipe': confirmBox('Apagar dados locais?', 'Partidas e pits deste aparelho serão apagados. Dados ainda não sincronizados serão perdidos.', 'Apagar', () => {
+        records = {}; pits = {}; persist(); render(); toast('Dados locais apagados'); if (db) resubscribe(); }); break;
+  }
+});
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-bind]'); if (!el) return;
+  const sc = el.dataset.scope || 'draft', k = el.dataset.bind;
+  let v = el.value;
+  if (['team','myTeam','capacity','autoFuel'].includes(k) || k.startsWith('sim.')) { v = v.replace(/\D/g,'').slice(0,5); if (v !== el.value) el.value = v; }
+  setP(scopeObj(sc), k, v); scopeSave(sc);
+  if (sc === 'draft' && k === 'team'){ const t = $('#mbTeam'); if (t) t.textContent = v || '—'; }
+  if (el.dataset.live === 'sim'){ const {recs} = filteredRecords(); const out = document.createElement('div'); out.innerHTML = vSim(computeStats(recs)); $('#simOut').innerHTML = out.querySelector('#simOut').innerHTML; }
+});
+
+/* ===================== Salvar ===================== */
+function saveMatch(){
+  const d = draft;
+  if (!teamOk(d.team)){ toast('Falta o número da equipe'); d.phase = 'pre'; saveDraft(); render(); return; }
+  if (!d.alliance && !d.noShow){ toast('Escolha a aliança'); d.phase = 'pre'; saveDraft(); render(); return; }
+  const editing = !!d.id;
+  const ev = editing ? (d.event ?? settings.event) : settings.event;
+  const id = d.id || `${slug(ev)}-q${d.match}-${d.team}-${Math.random().toString(36).slice(2,7)}`;
+  const rec = {
+    id, v:1, event: ev || '', match: Number(d.match)||0, team: String(d.team), alliance: d.alliance, station: d.station,
+    scout: editing ? (d.scout ?? settings.scout) : settings.scout,
+    startPos: d.startPos, preload: d.preload, noShow: !!d.noShow, autoWinner: d.autoWinner,
+    auto: clone(d.auto), tele: clone(d.tele), end: clone(d.end), post: clone(d.post),
+    notes: d.notes || '', pts: calcPts(d), ts: Date.now()
+  };
+  records[id] = Object.assign({}, rec, {_synced:false}); persist();
+  toast(`${editing?'Atualizado':'Salvo'} · Q${rec.match} · ${rec.team} · ${rec.pts} pts`);
+  if (editing){ draft = LS.get('draftBackup', null) || newDraft(rec); LS.set('draftBackup', null); }
+  else draft = newDraft(d);
+  clock = {start:null}; LS.set('clock', clock); stopTick();
+  saveDraft(); render(); window.scrollTo(0,0);
+  syncPending();
+  if (editing) go('dados');
+}
+function savePit(){
+  const p = pitDraft;
+  if (!teamOk(p.team)){ toast('Falta o número da equipe'); return; }
+  pits[p.team] = Object.assign(clone(p), {team:String(p.team), scout:settings.scout, ts:Date.now(), _synced:false}); persist();
+  toast(`Pit da ${p.team} salvo`);
+  pitDraft = newPit(); savePitDraft(); render(); window.scrollTo(0,0);
+  syncPending();
+}
+function stripMeta(r){ const o = clone(r); delete o._synced; return o; }
+
+/* ===================== Export / Import ===================== */
+function toTSV(){
+  const cols = ['evento','partida','equipe','alianca','estacao','scout','no_show','pos_inicial','preload',
+    'auto_fuel','auto_torre_L1','auto_fontes','auto_falhou','tele_fuel','tele_passes','rotas','coleta','defesa_0_3','precisao_1_5','sofreu_defesa',
+    'torre','piloto_1_5','problemas','minor','major','cartao','pts_estimados','observacoes','data'];
+  const clean = v => String(v ?? '').replace(/[\t\r\n]+/g,' ');
+  const rows = Object.values(records).sort((a,b) => (a.event||'').localeCompare(b.event||'') || a.match - b.match || a.team - b.team).map(r => [
+    r.event, r.match, r.team, r.alliance==='R'?'Vermelha':r.alliance==='B'?'Azul':'', r.station||'', r.scout, r.noShow?1:0, L.startPos[r.startPos]||'', r.preload,
+    r.auto?.fuel, r.auto?.climb?1:0, (r.auto?.sources||[]).map(x=>L.sources[x]).join('/'), r.auto?.stalled?1:0,
+    r.tele?.fuel, r.tele?.passed, (r.tele?.routes||[]).map(x=>L.routes[x]).join('/'), (r.tele?.intake||[]).map(x=>L.intake[x]).join('/'),
+    r.tele?.defense, r.tele?.accuracy||'', r.tele?.defended?1:0,
+    r.end?.tower==='none'?'':r.end?.tower==='fail'?'Falhou':r.end?.tower, r.post?.driver||'', (r.post?.issues||[]).map(x=>L.issues[x]).join('/'),
+    r.post?.minor, r.post?.major, r.post?.card==='none'?'':L.card[r.post?.card], r.pts, r.notes, r.ts ? new Date(r.ts).toLocaleString('pt-BR') : ''
+  ].map(clean).join('\t'));
+  return [cols.join('\t'), ...rows].join('\n');
+}
+function importData(){
+  const box = $('#importBox'); let data;
+  try { data = JSON.parse(box.value.trim()); } catch(e){ toast('Backup inválido — confira se colou tudo'); return; }
+  let nr = 0, np = 0;
+  (data.records || []).forEach(r => {
+    if (!r || !r.id || !teamOk(r.team)) return;
+    const cur = records[r.id]; if (cur && (cur.ts||0) >= (r.ts||0)) return;
+    records[r.id] = Object.assign({}, r, {id: slug(r.id), _synced:false}); nr++;
+  });
+  (data.pits || []).forEach(p => {
+    if (!p || !teamOk(p.team)) return;
+    const cur = pits[p.team]; if (cur && (cur.ts||0) >= (p.ts||0)) return;
+    pits[p.team] = Object.assign({}, p, {_synced:false}); np++;
+  });
+  persist(); box.value = ''; render(); toast(`Importado: ${nr} partida${nr===1?'':'s'}, ${np} pit${np===1?'':'s'}`);
+  syncPending();
+}
+
+/* ===================== Banco compartilhado ===================== */
+const pendingCount = () => Object.values(records).filter(r => !r._synced).length + Object.values(pits).filter(p => !p._synced).length;
+function updateSyncPill(){
+  const pill = $('#syncPill'); if (!pill) return;
+  const pend = pendingCount();
+  let cls = '', txt = '';
+  if (!db){ cls = ''; txt = 'Modo local'; }
+  else if (dbReadOnly){ cls = 'warn'; txt = 'Só leitura'; }
+  else if (dbState === 'connecting'){ cls = 'wait'; txt = 'Conectando…'; }
+  else if (pend){ cls = 'warn'; txt = `${pend} pendente${pend>1?'s':''}`; }
+  else if (dbState === 'offline'){ cls = 'warn'; txt = 'Sem conexão'; }
+  else { cls = 'ok'; txt = 'Sincronizado'; }
+  pill.className = 'sync ' + cls; pill.querySelector('span').textContent = txt;
+}
+function handleDbErr(e){
+  const c = e && e.code;
+  if (c === 'invalid_argument') dbReadOnly = true;
+  else if (['revoked','not_granted','capability_disabled','capability_removed'].includes(c)){ db = null; }
+  else if (c === 'quota_exceeded') toast('O banco do time está cheio — exporte e limpe partidas antigas');
+  else dbState = 'offline';
+  updateSyncPill();
+}
+async function writeDoc(col, id, body){
+  for (let attempt = 0; attempt < 2; attempt++){
+    try { await db.collection(col).doc(id).set(body); return true; }
+    catch(e){
+      if (e && e.code === 'unavailable' && attempt === 0){ await sleep(400 + Math.random()*700); continue; }
+      handleDbErr(e); return false;
+    }
+  }
+  return false;
+}
+async function syncPending(){
+  if (!db || dbReadOnly || syncing) { updateSyncPill(); return; }
+  syncing = true; updateSyncPill();
+  try {
+    for (const r of Object.values(records).filter(r => !r._synced)){
+      if (!db) break;
+      if (!(await writeDoc('matches', r.id, stripMeta(r)))) break;
+      if (records[r.id]) records[r.id]._synced = true; persist();
+    }
+    for (const p of Object.values(pits).filter(p => !p._synced)){
+      if (!db || dbReadOnly) break;
+      if (!(await writeDoc('pit', String(p.team), stripMeta(p)))) break;
+      if (pits[p.team]) pits[p.team]._synced = true; persist();
+    }
+  } finally { syncing = false; updateSyncPill(); if (view === 'dados' || view === 'ajustes') render(); }
+}
+function manualSync(){
+  if (!db){ toast('Modo local: use Exportar/Importar em Ajustes'); return; }
+  if (dbReadOnly){ toast('Sem permissão de envio — peça acesso de Colaborador'); return; }
+  dbState = dbState === 'offline' ? 'connecting' : dbState;
+  syncPending().then(() => { if (!pendingCount()) toast('Tudo sincronizado'); });
+}
+function mergeSnapshot(snap, store, keyOf){
+  let changed = false;
+  const seen = new Set();
+  snap.docs.forEach(doc => {
+    const r = doc.data(); if (!r) return;
+    const key = keyOf(doc, r); seen.add(key);
+    const loc = store[key];
+    const incoming = Object.assign(clone(r), {_synced:true});
+    if (!loc || (loc._synced && (r.ts||0) !== (loc.ts||0)) || (!loc._synced && (r.ts||0) > (loc.ts||0))){ store[key] = incoming; changed = true; }
+    else if (!loc._synced && (r.ts||0) === (loc.ts||0)){ loc._synced = true; changed = true; }
+  });
+  if (!snap.metadata.fromCache){
+    Object.keys(store).forEach(key => { if (store[key]._synced && !seen.has(key)){ delete store[key]; changed = true; } });
+  }
+  return changed;
+}
+let unsubs = [];
+function subscribe(){
+  let loadTimer = setTimeout(() => { if (dbState === 'connecting'){ dbState = 'offline'; updateSyncPill(); } }, 10000);
+  const onErr = e => { clearTimeout(loadTimer); handleDbErr(e); };
+  const after = (changed, snap) => {
+    if (!snap.metadata.fromCache){ clearTimeout(loadTimer); if (dbState !== 'online'){ dbState = 'online'; syncPending(); } }
+    if (changed){ persist(); if (view === 'dados' || view === 'pit') render(); if (ui.modalTeam && $('#modal').classList.contains('open')) openModal(teamSheet(ui.modalTeam)); }
+    updateSyncPill();
+  };
+  unsubs.push(db.collection('matches').onSnapshot(snap => after(mergeSnapshot(snap, records, (d) => d.id), snap), onErr));
+  unsubs.push(db.collection('pit').onSnapshot(snap => after(mergeSnapshot(snap, pits, (d) => d.id), snap), onErr));
+}
+function resubscribe(){ unsubs.forEach(u => { try { u(); } catch(e){} }); unsubs = []; if (db){ dbState = 'connecting'; subscribe(); } }
+async function initDb(){
+  for (let i = 0; i < 8 && !(window.claude && typeof window.claude.use === 'function'); i++) await sleep(250);
+  if (!(window.claude && typeof window.claude.use === 'function')){ db = null; updateSyncPill(); render(); return; }
+  try { db = await window.claude.use('db'); } catch(e){ db = null; }
+  if (!db){ updateSyncPill(); if (view === 'ajustes') render(); return; }
+  try {
+    const user = await window.claude.use('user');
+    if (user && typeof user.can === 'function'){ const w = await user.can('data.write'); if (w === false) dbReadOnly = true; }
+  } catch(e){}
+  dbState = 'connecting'; updateSyncPill();
+  subscribe();
+}
+window.addEventListener('online', () => { if (db){ dbState = 'connecting'; syncPending(); } });
+setInterval(() => { if (db && !dbReadOnly && pendingCount()) syncPending(); }, 30000);
+
+/* ===================== Início ===================== */
+(function init(){
+  const h = location.hash.slice(1); if (VIEWS[h]) view = h;
+  measureHeader(); window.addEventListener('resize', measureHeader);
+  if (clock.start && elapsed() < 165) startTick(); else if (clock.start){ clock = {start:null}; LS.set('clock', clock); }
+  render();
+  initDb();
+})();
+</script>
+</body>
+</html>
